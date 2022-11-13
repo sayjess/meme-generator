@@ -1,39 +1,85 @@
-import datas from '../data'
 import React from 'react';
 
 function Form(){
-    const MemesData = datas.data.memes
-    let [url, setUrl] = React.useState(MemesData[0].url)
+    const [memesData, setMemesData] = React.useState([])
+    //fetch MEME API
+    React.useEffect(() => {
+        fetch("https://api.imgflip.com/get_memes")
+        .then(resp => resp.json())
+        .then(datas => setMemesData(datas.data.memes))
+    }, [])
 
+    // const memesData = datas.data.memes
+    const [meme, setMeme] = React.useState({
+        topText: "",
+        bottomText: "",
+        randomImage: "http://i.imgflip.com/1bij.jpg" 
+    })
+
+    //random image handler
     function buttonClickHandler() {
         //randomize number from 0 to 99
-        const random = Math.floor(Math.random() * MemesData.length) 
-        //set the useState to a random url
-        // setUrl(MemesData[random].url)
-        //best practice to use a callback function instead of above setter
-        // setUrl(function(){
-        //     return setUrl(MemesData[random].url)
-        // })
-        //using arrow function
-        setUrl(url => MemesData[random].url)
-        
+        const random = Math.floor(Math.random() * memesData.length)
+        const url = memesData[random].url
+        setMeme(prevMeme => ({
+            ...prevMeme,
+            randomImage: url
+        }))
+    }
+    //form handler
+
+    function handleChange(event) {
+        const {name, value} = event.target
+        setMeme(prevMeme => ({
+            ...prevMeme,
+            [name]: value
+        }))
+    }
+
+    function handleSubmit(event) {
+        event.preventDefault() 
     }
 
     return(
-        <section className="form">
-            <div className="input-text-wrapper">
-                <input className="text-field" type="text" 
-                placeholder="Enter Upper Text"/>
-                <input 
-                className="text-field" 
-                type="text"
-                placeholder="Enter Bottom Text"/>
+        <form className="form" onSubmit={handleSubmit}> 
+            <div className='grid'>
+                <div className='input-text-wrapper'>
+                    <input
+                        className="text-field field"
+                        type="text"
+                        placeholder="Enter Upper Text"
+                        onChange={handleChange}
+                        name="topText"
+                        value={meme.topText}
+                    />
+
+                    <input
+                        className="text-field field"
+                        type="text"
+                        placeholder="Enter Bottom Text"
+                        onChange={handleChange}
+                        name="bottomText"
+                        value={meme.bottomText}
+                    />
+                </div>    
+                <button 
+                    className="button field" 
+                    onClick={buttonClickHandler}
+                >
+                    Get a new meme images
+                </button>
             </div>
-            <button onClick={buttonClickHandler} className="button">Get a new meme images</button>
-            <div className="meme-img-wrapper">
-                <img className="meme-image" src={url} alt=''/>
+            <div 
+                className="meme-img-wrapper grid">
+                <img 
+                    className="meme-image" 
+                    src={meme.randomImage} 
+                    alt=''
+                />
+                <h2 className="meme--text top">{meme.topText}</h2>
+                <h2 className="meme--text bottom">{meme.bottomText}</h2>
             </div>
-        </section>
+        </form>
 
     )
 }
